@@ -1,0 +1,41 @@
+name: Web Content Crawler
+on:
+  push:
+    branches:
+      - main  # 这里可以根据你的需求修改为触发工作流的分支
+
+jobs:
+  crawl-webpage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests  # 安装用于抓取网页的 requests 库
+
+      - name: Crawl the webpage
+        run: |
+          import requests
+          url = "https://6666.fangfang36006-47a.workers.dev/"  # 替换为你要抓取的网页 URL
+          response = requests.get(url)
+          if response.status_code == 200:
+              with open('captured_content.txt', 'w', encoding='utf-8') as file:
+                  file.write(response.text)
+          else:
+              print(f"Failed to fetch the page. Status code: {response.status_code}")
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add captured_content.txt
+          git commit -m "Update captured content from webpage" || true  # 避免没有变化时出错
+          git push
